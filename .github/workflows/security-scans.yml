@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload SpotBugs SARIF to GitHub Security
-        uses: actions/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: target/spotbugsSarif.json
           category: 'spotbugs'
@@ -96,6 +96,6 @@ jobs:
           fetch-depth: 0
 
       - name: Scan for secrets with TruffleHog
-        uses: trufflesecurity/trufflehog@v3
+        uses: trufflesecurity/trufflehog@main
         with:
           path: './'
