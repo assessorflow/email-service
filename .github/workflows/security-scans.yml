@@ -24,11 +24,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Get Date for Cache Key
+        id: date
+        run: echo "week=$(date +%Y-W%W)" >> $GITHUB_OUTPUT
+
       - name: Cache NVD Database
         uses: actions/cache@v4
         with:
-          path: ~/.dependency-check
-          key: nvd-db-${{ hashFiles('pom.xml') }}
+          path: |
+            ~/.m2/repository/org/owasp/dependency-check-data
+            ~/.dependency-check
+          key: nvd-db-${{ steps.date.outputs.week }}
           restore-keys: nvd-db-
 
       - name: Run OWASP Dependency-Check
