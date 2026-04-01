@@ -1,0 +1,95 @@
+name: Security Scans
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: OWASP Dependency-Check (SCA)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'email-service'
+          path: '.'
+          format: 'HTML JSON'
+          out: 'reports'
+          args: '--failOnCVSS 7'
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: reports/dependency-check-report.html
+          retention-days: 30
+
+  codeql:
+    name: CodeQL (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL database
+        uses: github/codeql-action/init@v4
+        with:
+          languages: java
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: '/language:java'
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+
+  spotbugs:
+    name: SpotBugs (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run SpotBugs analysis
+        run: mvn spotbugs:spotbugs -Dspotbugs.outputFormat=sarif
+        continue-on-error: true
+
+      - name: Upload SpotBugs SARIF to GitHub Security
+        uses: actions/upload-sarif@v4
+        with:
+          sarif_file: target/spotbugsSarif.json
+          category: 'spotbugs'
+        continue-on-error: true
+
+  trufflehog:
+    name: TruffleHog (Secret Scanning)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets with TruffleHog
+        uses: trufflesecurity/trufflehog-action@v3
