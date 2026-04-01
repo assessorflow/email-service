@@ -3,6 +3,10 @@ name: Security Scans
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   dependency-check:
     name: OWASP Dependency-Check (SCA)
@@ -92,4 +96,6 @@ jobs:
           fetch-depth: 0
 
       - name: Scan for secrets with TruffleHog
-        uses: trufflesecurity/trufflehog-action@v3
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          path: './'
