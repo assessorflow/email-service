@@ -6,11 +6,20 @@ FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
+# Create non-root user for security
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
 # Copy the pre-built JAR from Maven build
 COPY target/*.jar app.jar
 
+# Set ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
 # Expose the application port
 EXPOSE 8084
+
+# Switch to non-root user
+USER appuser
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
