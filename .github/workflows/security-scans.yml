@@ -21,6 +21,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Cache NVD Database
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: nvd-db-${{ github.run_number }}
+          restore-keys: nvd-db-
+
       - name: Run OWASP Dependency-Check
         run: mvn dependency-check:check -DnvdApiKey=${{ secrets.NVD_API_KEY }}
         continue-on-error: true
