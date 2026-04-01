@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   dependency-check:
@@ -97,7 +98,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run SpotBugs analysis
-        run: mvn compile spotbugs:spotbugs
+        run: mvn compile spotbugs:check
         continue-on-error: true
 
       - name: Upload SpotBugs SARIF to GitHub Security
@@ -107,12 +108,15 @@ jobs:
           category: 'spotbugs'
         continue-on-error: true
 
-      - name: Upload SpotBugs HTML report
+      - name: Upload SpotBugs reports
         uses: actions/upload-artifact@v4
         with:
-          name: spotbugs-report
-          path: target/spotbugs.html
+          name: spotbugs-reports
+          path: |
+            target/spotbugs.html
+            target/spotbugs.xml
           retention-days: 30
+          if-no-files-found: ignore
         continue-on-error: true
 
   trufflehog:

@@ -137,18 +137,10 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <failOnError>false</failOnError>
+                    <xmlOutput>true</xmlOutput>
                     <htmlOutput>true</htmlOutput>
                     <sarifOutput>true</sarifOutput>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>spotbugs-check</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- OWASP Dependency Check (for SCA) -->
