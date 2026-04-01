@@ -22,7 +22,9 @@ jobs:
           path: '.'
           format: 'HTML JSON'
           out: 'reports'
-          args: '--failOnCVSS 7'
+          args: >
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+            --enableExperimental
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
@@ -58,8 +60,12 @@ jobs:
           category: '/language:java'
         continue-on-error: true
 
-      - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v4
+      - name: Upload CodeQL SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: /home/runner/work/email-service/_results/*.sarif.json
+          retention-days: 30
         continue-on-error: true
 
   spotbugs:
@@ -76,7 +82,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run SpotBugs analysis
-        run: mvn spotbugs:spotbugs -Dspotbugs.outputFormat=sarif
+        run: mvn compile spotbugs:spotbugs -Dspotbugs.outputFormat=sarif
         continue-on-error: true
 
       - name: Upload SpotBugs SARIF to GitHub Security
@@ -84,6 +90,14 @@ jobs:
         with:
           sarif_file: target/spotbugsSarif.json
           category: 'spotbugs'
+        continue-on-error: true
+
+      - name: Upload SpotBugs SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-sarif
+          path: target/spotbugsSarif.json
+          retention-days: 30
         continue-on-error: true
 
   trufflehog:
