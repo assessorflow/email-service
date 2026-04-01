@@ -88,7 +88,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run SpotBugs analysis
-        run: mvn compile spotbugs:spotbugs -Dspotbugs.outputFormat=sarif
+        run: mvn compile spotbugs:spotbugs
         continue-on-error: true
 
       - name: Upload SpotBugs SARIF to GitHub Security
@@ -98,11 +98,11 @@ jobs:
           category: 'spotbugs'
         continue-on-error: true
 
-      - name: Upload SpotBugs SARIF artifact
+      - name: Upload SpotBugs HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: spotbugs-sarif
-          path: target/spotbugsSarif.json
+          name: spotbugs-report
+          path: target/spotbugs.html
           retention-days: 30
         continue-on-error: true
 

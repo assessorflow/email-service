@@ -137,7 +137,8 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <failOnError>false</failOnError>
-                    <outputFormat>sarif</outputFormat>
+                    <htmlOutput>true</htmlOutput>
+                    <sarifOutput>true</sarifOutput>
                 </configuration>
                 <executions>
                     <execution>
