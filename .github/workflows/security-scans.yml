@@ -48,14 +48,14 @@ jobs:
         with:
           name: dependency-check-report
           path: target/dependency-check-report.html
-          retention-days: 30
+          retention-days: 1
 
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-json
           path: target/dependency-check-report.json
-          retention-days: 30
+          retention-days: 1
 
   codeql:
     name: CodeQL (SAST)
@@ -89,7 +89,7 @@ jobs:
         with:
           name: codeql-sarif
           path: /home/runner/work/email-service/results/*.sarif
-          retention-days: 30
+          retention-days: 1
         continue-on-error: true
 
   spotbugs:
@@ -123,7 +123,7 @@ jobs:
           path: |
             target/spotbugs.html
             target/spotbugs.xml
-          retention-days: 30
+          retention-days: 1
           if-no-files-found: ignore
         continue-on-error: true
 
