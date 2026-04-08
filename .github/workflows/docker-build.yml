@@ -1,6 +1,9 @@
 name: Docker Build and Push
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       image_tag:
@@ -55,6 +58,7 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        if: github.event_name == 'push'
         with:
           context: .
           file: .github/workflows/Dockerfile.ci
