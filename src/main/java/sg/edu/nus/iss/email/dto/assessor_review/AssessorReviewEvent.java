@@ -13,11 +13,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class AssessorReviewEvent implements Serializable {
 
+    // Fields from pubsub.md §5.25
+    private String assessmentId;
+    private String assessorEmail;
+    private String reviewLink;
+    private Integer questionCount;
+
+    // Extra fields for template rendering (Orchestrator includes these)
     private String workflowId;
-    private String recipientEmail;
     private String assessorName;
     private String assessmentName;
-    private String reviewLink;
-    private String subject;
-    private String emailLogId;
 }

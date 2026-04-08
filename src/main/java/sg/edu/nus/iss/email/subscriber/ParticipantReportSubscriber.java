@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
+import sg.edu.nus.iss.email.dto.EmailDeliverEvent;
 import sg.edu.nus.iss.email.dto.participant_report.ParticipantReportEvent;
 import sg.edu.nus.iss.email.service.ParticipantReportService;
 
@@ -25,7 +26,7 @@ public class ParticipantReportSubscriber {
                 .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
         try {
             ParticipantReportEvent event = objectMapper.readValue(message.getPayload(), ParticipantReportEvent.class);
-            log.info("[PARTICIPANT_REPORT][REQUEST] Received: recipient={}", event.getRecipientEmail());
+            log.info("[PARTICIPANT_REPORT][REQUEST] Received: recipient={}", event.getParticipantEmail());
             service.handleRequest(event);
             if (ack != null) ack.ack();
         } catch (Exception e) {
@@ -39,7 +40,7 @@ public class ParticipantReportSubscriber {
         BasicAcknowledgeablePubsubMessage ack = message.getHeaders()
                 .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
         try {
-            ParticipantReportEvent event = objectMapper.readValue(message.getPayload(), ParticipantReportEvent.class);
+            EmailDeliverEvent event = objectMapper.readValue(message.getPayload(), EmailDeliverEvent.class);
             log.info("[PARTICIPANT_REPORT][DELIVER] Sending email: recipient={}", event.getRecipientEmail());
             service.handleDeliver(event);
             if (ack != null) ack.ack();

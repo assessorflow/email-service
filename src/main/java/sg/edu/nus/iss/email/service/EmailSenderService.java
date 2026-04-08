@@ -22,13 +22,15 @@ public class EmailSenderService {
     @Value("${aws.ses.from-email}")
     private String fromEmail;
 
-    public void sendHtmlEmail(String to, String subject, String templateName, Map<String, Object> templateData) {
+    public String renderTemplate(String templateName, Map<String, Object> templateData) {
         Context context = new Context();
         if (templateData != null) {
             context.setVariables(templateData);
         }
-        String htmlBody = templateEngine.process(templateName, context);
+        return templateEngine.process(templateName, context);
+    }
 
+    public void sendRenderedHtml(String to, String subject, String htmlBody) {
         SendEmailRequest request = SendEmailRequest.builder()
                 .fromEmailAddress(fromEmail)
                 .destination(Destination.builder().toAddresses(to).build())

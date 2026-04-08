@@ -15,4 +15,7 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
     List<EmailLog> findByRecipientEmail(String recipientEmail);
 
     List<EmailLog> findByStatus(EmailLog.Status status);
+
+    boolean existsByWorkflowIdAndRecipientEmailAndEmailType(
+            String workflowId, String recipientEmail, EmailLog.EmailType emailType);
 }

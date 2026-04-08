@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: email-service
+  profiles:
+    active: dev
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
   jpa:
     hibernate:
       ddl-auto: none
@@ -24,24 +31,24 @@ spring:
 app:
   pubsub:
     assessor-review:
-      request-subscription: assessorflow.email.request.assessor-review.sub
-      deliver-subscription: assessorflow.email.deliver.assessor-review.sub
+      request-subscription: assessorflow.email.request.assessor-review
+      deliver-subscription: assessorflow.email.deliver.assessor-review
       deliver-topic: assessorflow.email.deliver.assessor-review
     assessment-link:
-      request-subscription: assessorflow.email.request.assessment-link.sub
-      deliver-subscription: assessorflow.email.deliver.assessment-link.sub
+      request-subscription: assessorflow.email.request.assessment-link
+      deliver-subscription: assessorflow.email.deliver.assessment-link
       deliver-topic: assessorflow.email.deliver.assessment-link
     participant-report:
-      request-subscription: assessorflow.email.request.participant-report.sub
-      deliver-subscription: assessorflow.email.deliver.participant-report.sub
+      request-subscription: assessorflow.email.request.participant-report
+      deliver-subscription: assessorflow.email.deliver.participant-report
       deliver-topic: assessorflow.email.deliver.participant-report
 
 # AWS SES
 aws:
   region: ${AWS_REGION:ap-southeast-1}
   credentials:
-    access-key: ${AWS_ACCESS_KEY_ID:}
-    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
   ses:
     from-email: ${AWS_SES_FROM_EMAIL:chronoflow2025@gmail.com}
 

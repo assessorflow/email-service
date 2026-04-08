@@ -14,7 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -27,11 +27,13 @@ public class EmailLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "workflow_id", length = 50)
     private String workflowId;
+
+    @Column(name = "assessment_id")
+    private UUID assessmentId;
 
     @Column(name = "recipient_email", nullable = false)
     private String recipientEmail;
@@ -49,14 +51,14 @@ public class EmailLog {
     private Status status = Status.QUEUED;
 
     @Column(name = "sent_at")
-    private LocalDateTime sentAt;
+    private Instant sentAt;
 
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public enum Status {
         QUEUED,
@@ -65,8 +67,8 @@ public class EmailLog {
     }
 
     public enum EmailType {
-        QUESTION_REVIEW,
-        ASSESSMENT_LINK,
+        ASSESSOR_REVIEW,
+        PARTICIPANT_INVITATION,
         PARTICIPANT_REPORT
     }
 }

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
+import sg.edu.nus.iss.email.dto.EmailDeliverEvent;
 import sg.edu.nus.iss.email.dto.assessment_link.AssessmentLinkEvent;
 import sg.edu.nus.iss.email.service.AssessmentLinkService;
 
@@ -25,7 +26,7 @@ public class AssessmentLinkSubscriber {
                 .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
         try {
             AssessmentLinkEvent event = objectMapper.readValue(message.getPayload(), AssessmentLinkEvent.class);
-            log.info("[ASSESSMENT_LINK][REQUEST] Received: recipient={}", event.getRecipientEmail());
+            log.info("[ASSESSMENT_LINK][REQUEST] Received: recipient={}", event.getParticipantEmail());
             service.handleRequest(event);
             if (ack != null) ack.ack();
         } catch (Exception e) {
@@ -39,7 +40,7 @@ public class AssessmentLinkSubscriber {
         BasicAcknowledgeablePubsubMessage ack = message.getHeaders()
                 .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
         try {
-            AssessmentLinkEvent event = objectMapper.readValue(message.getPayload(), AssessmentLinkEvent.class);
+            EmailDeliverEvent event = objectMapper.readValue(message.getPayload(), EmailDeliverEvent.class);
             log.info("[ASSESSMENT_LINK][DELIVER] Sending email: recipient={}", event.getRecipientEmail());
             service.handleDeliver(event);
             if (ack != null) ack.ack();

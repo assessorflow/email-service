@@ -13,12 +13,15 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ParticipantReportEvent implements Serializable {
 
+    // Fields from pubsub.md §5.27
+    private String assessmentId;
+    private String participantEmail;
+    private String reportId;
+    private String reportLink;
+
+    // Extra fields for template rendering (Orchestrator includes these)
     private String workflowId;
-    private String recipientEmail;
     private String participantName;
     private String assessmentName;
     private String score;
-    private String reportLink;
-    private String subject;
-    private String emailLogId;
 }
