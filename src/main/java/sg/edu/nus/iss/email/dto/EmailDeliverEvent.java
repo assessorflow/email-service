@@ -1,11 +1,11 @@
 package sg.edu.nus.iss.email.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 /**
  * Deliver stage payload (pubsub.md §5.28).
@@ -15,11 +15,17 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmailDeliverEvent implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EmailDeliverEvent {
 
+    @JsonAlias({"email_log_id", "emailLogId"})
     private String emailLogId;
+
+    @JsonAlias({"recipient_email", "recipientEmail"})
     private String recipientEmail;
+
     private String subject;
-    private String templateId;
+
+    @JsonAlias({"rendered_html", "renderedHtml"})
     private String renderedHtml;
 }

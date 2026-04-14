@@ -1,26 +1,45 @@
 package sg.edu.nus.iss.email.dto.assessor_review;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AssessorReviewEvent implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AssessorReviewEvent {
 
-    // Fields from pubsub.md §5.25
+    @NotBlank
+    @JsonAlias({"assessment_id", "assessmentId"})
     private String assessmentId;
+
+    @NotBlank @Email
+    @JsonAlias({"assessor_email", "assessorEmail"})
     private String assessorEmail;
+
+    @NotBlank
+    @JsonAlias({"review_link", "reviewLink"})
     private String reviewLink;
+
+    @JsonAlias({"question_count", "questionCount"})
     private Integer questionCount;
 
-    // Extra fields for template rendering (Orchestrator includes these)
+    @NotBlank
+    @JsonAlias({"workflow_id", "workflowId"})
     private String workflowId;
+
+    @NotBlank
+    @JsonAlias({"assessor_name", "assessorName"})
     private String assessorName;
+
+    @NotBlank
+    @JsonAlias({"assessment_name", "assessmentName"})
     private String assessmentName;
 }

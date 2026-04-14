@@ -1,15 +1,21 @@
 spring:
   cloud:
     gcp:
-      project-id: accessorflow
+      project-id: aflow-491809
   datasource:
-    url: jdbc:postgresql://localhost:5432/email_db
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://localhost:15433/af_email
+    username: ${DB_USERNAME:assessorflow}
+    password: ${DB_PASSWORD:assessorflow_prod}
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
 
+aws:
+  region: ${AWS_REGION:us-west-2}
+  ses:
+    from-email: ${AWS_SES_FROM_EMAIL:noreply@assessorflow.online}
+
 logging:
   level:
     sg.edu.nus.iss.email: DEBUG
+    software.amazon.awssdk: DEBUG

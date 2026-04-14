@@ -1,11 +1,14 @@
 server:
   port: 8084
+  shutdown: graceful
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: email-service
-  profiles:
-    active: dev
+  # No default profile — set explicitly per environment:
+  # Local: -Dspring.profiles.active=dev | Docker: SPRING_PROFILES_ACTIVE=docker | GKE: SPRING_PROFILES_ACTIVE=prod
   jackson:
     property-naming-strategy: SNAKE_CASE
     serialization:
@@ -21,36 +24,34 @@ spring:
     baseline-on-migrate: true
   cloud:
     gcp:
-      project-id: accessorflow
+      project-id: ${GCP_PROJECT_ID:accessorflow}
       pubsub:
         subscriber:
           parallel-pull-count: 1
-          max-ack-extension-period: 0
+          max-ack-extension-period: 60
 
 # Pub/Sub subscriptions
 app:
   pubsub:
     assessor-review:
-      request-subscription: assessorflow.email.request.assessor-review
-      deliver-subscription: assessorflow.email.deliver.assessor-review
+      request-subscription: assessorflow.email.request.assessor-review.sub
+      deliver-subscription: assessorflow.email.deliver.assessor-review.sub
       deliver-topic: assessorflow.email.deliver.assessor-review
     assessment-link:
-      request-subscription: assessorflow.email.request.assessment-link
-      deliver-subscription: assessorflow.email.deliver.assessment-link
+      request-subscription: assessorflow.email.request.assessment-link.sub
+      deliver-subscription: assessorflow.email.deliver.assessment-link.sub
       deliver-topic: assessorflow.email.deliver.assessment-link
     participant-report:
-      request-subscription: assessorflow.email.request.participant-report
-      deliver-subscription: assessorflow.email.deliver.participant-report
+      request-subscription: assessorflow.email.request.participant-report.sub
+      deliver-subscription: assessorflow.email.deliver.participant-report.sub
       deliver-topic: assessorflow.email.deliver.participant-report
 
-# AWS SES
+# AWS SES — credentials resolved via DefaultCredentialsProvider
+# (env vars AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, or IAM role in prod)
 aws:
   region: ${AWS_REGION:ap-southeast-1}
-  credentials:
-    access-key: ${AWS_ACCESS_KEY:}
-    secret-key: ${AWS_SECRET_KEY:}
   ses:
-    from-email: ${AWS_SES_FROM_EMAIL:chronoflow2025@gmail.com}
+    from-email: ${AWS_SES_FROM_EMAIL:noreply@assessorflow.online}
 
 management:
   endpoints:

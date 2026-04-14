@@ -19,6 +19,8 @@ public class EmailSenderService {
     private final SesV2Client sesV2Client;
     private final SpringTemplateEngine templateEngine;
 
+
+    
     @Value("${aws.ses.from-email}")
     private String fromEmail;
 

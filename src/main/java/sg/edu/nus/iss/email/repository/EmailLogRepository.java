@@ -1,20 +1,21 @@
 package sg.edu.nus.iss.email.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import sg.edu.nus.iss.email.entity.EmailLog;
 
-import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
 
-    List<EmailLog> findByWorkflowId(String workflowId);
+    Page<EmailLog> findByWorkflowId(String workflowId, Pageable pageable);
 
-    List<EmailLog> findByRecipientEmail(String recipientEmail);
+    Page<EmailLog> findByRecipientEmail(String recipientEmail, Pageable pageable);
 
-    List<EmailLog> findByStatus(EmailLog.Status status);
+    Page<EmailLog> findByStatus(EmailLog.Status status, Pageable pageable);
 
     boolean existsByWorkflowIdAndRecipientEmailAndEmailType(
             String workflowId, String recipientEmail, EmailLog.EmailType emailType);

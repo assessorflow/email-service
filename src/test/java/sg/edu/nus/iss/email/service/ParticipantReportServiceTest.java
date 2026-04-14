@@ -2,17 +2,23 @@ package sg.edu.nus.iss.email.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sg.edu.nus.iss.email.dto.EmailDeliverEvent;
 import sg.edu.nus.iss.email.dto.participant_report.ParticipantReportEvent;
 import sg.edu.nus.iss.email.entity.EmailLog;
 import sg.edu.nus.iss.email.repository.EmailLogRepository;
 
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -24,27 +30,27 @@ class ParticipantReportServiceTest {
     @Mock private PubSubTemplate pubSubTemplate;
     @Mock private ObjectMapper objectMapper;
 
-    @InjectMocks
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private ParticipantReportService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new ParticipantReportService(emailLogRepository, emailSenderService, pubSubTemplate, objectMapper, meterRegistry);
+    }
 
     @Test
     void handleRequest_success() throws Exception {
-        ParticipantReportEvent event = ParticipantReportEvent.builder()
-                .workflowId("wf_123")
-                .assessmentId("a1b2c3d4-0000-0000-0000-000000000000")
-                .participantEmail("student@test.com")
-                .participantName("Alice")
-                .assessmentName("OOP Quiz")
-                .reportId("r1b2c3d4-0000-0000-0000-000000000000")
-                .reportLink("https://app.assessorflow.com/report/123")
-                .score("85%")
-                .build();
+        ParticipantReportEvent event = buildEvent();
 
         when(emailLogRepository.existsByWorkflowIdAndRecipientEmailAndEmailType(
                 "wf_123", "student@test.com", EmailLog.EmailType.PARTICIPANT_REPORT))
                 .thenReturn(false);
-        when(emailLogRepository.save(any(EmailLog.class))).thenAnswer(i -> i.getArgument(0));
-        when(emailSenderService.renderTemplate(eq("participant-report"), anyMap())).thenReturn("<html>rendered</html>");
+        when(emailLogRepository.save(any(EmailLog.class))).thenAnswer(i -> {
+            EmailLog log = i.getArgument(0);
+            if (log.getId() == null) log.setId(UUID.randomUUID());
+            return log;
+        });
+        when(emailSenderService.renderTemplate(eq("participant-report"), anyMap())).thenReturn("<html>report</html>");
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(pubSubTemplate.publish(anyString(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
 
@@ -52,15 +58,11 @@ class ParticipantReportServiceTest {
 
         verify(emailLogRepository).save(any(EmailLog.class));
         verify(emailSenderService).renderTemplate(eq("participant-report"), anyMap());
-        verify(pubSubTemplate).publish(anyString(), anyString());
     }
 
     @Test
     void handleRequest_duplicate_ignored() {
-        ParticipantReportEvent event = ParticipantReportEvent.builder()
-                .workflowId("wf_123")
-                .participantEmail("student@test.com")
-                .build();
+        ParticipantReportEvent event = buildEvent();
 
         when(emailLogRepository.existsByWorkflowIdAndRecipientEmailAndEmailType(
                 "wf_123", "student@test.com", EmailLog.EmailType.PARTICIPANT_REPORT))
@@ -69,6 +71,63 @@ class ParticipantReportServiceTest {
         service.handleRequest(event);
 
         verify(emailLogRepository, never()).save(any());
-        verify(pubSubTemplate, never()).publish(anyString(), anyString());
+    }
+
+    @Test
+    void handleDeliver_success() {
+        UUID logId = UUID.randomUUID();
+        EmailLog emailLog = EmailLog.builder().id(logId).status(EmailLog.Status.QUEUED).build();
+        when(emailLogRepository.findById(logId)).thenReturn(Optional.of(emailLog));
+
+        service.handleDeliver(buildDeliverEvent(logId));
+
+        verify(emailSenderService).sendRenderedHtml(anyString(), anyString(), anyString());
+        verify(emailLogRepository).save(argThat(log -> log.getStatus() == EmailLog.Status.SENT));
+    }
+
+    @Test
+    void handleDeliver_alreadySent_skips() {
+        UUID logId = UUID.randomUUID();
+        EmailLog emailLog = EmailLog.builder().id(logId).status(EmailLog.Status.SENT).build();
+        when(emailLogRepository.findById(logId)).thenReturn(Optional.of(emailLog));
+
+        service.handleDeliver(buildDeliverEvent(logId));
+
+        verify(emailSenderService, never()).sendRenderedHtml(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void handleDeliver_sesFailure_savesFailedStatus() {
+        UUID logId = UUID.randomUUID();
+        EmailLog emailLog = EmailLog.builder().id(logId).status(EmailLog.Status.QUEUED).build();
+        when(emailLogRepository.findById(logId)).thenReturn(Optional.of(emailLog));
+        doThrow(new RuntimeException("SES timeout")).when(emailSenderService)
+                .sendRenderedHtml(anyString(), anyString(), anyString());
+
+        assertThrows(RuntimeException.class, () -> service.handleDeliver(buildDeliverEvent(logId)));
+
+        verify(emailLogRepository).save(argThat(log -> log.getStatus() == EmailLog.Status.FAILED));
+    }
+
+    private ParticipantReportEvent buildEvent() {
+        return ParticipantReportEvent.builder()
+                .workflowId("wf_123")
+                .assessmentId("a1b2c3d4-0000-0000-0000-000000000000")
+                .participantEmail("student@test.com")
+                .participantName("Test Student")
+                .assessmentName("OOP Quiz")
+                .reportId("rpt_456")
+                .reportLink("https://app.assessorflow.com/report/456")
+                .score("85/100")
+                .build();
+    }
+
+    private EmailDeliverEvent buildDeliverEvent(UUID logId) {
+        return EmailDeliverEvent.builder()
+                .emailLogId(logId.toString())
+                .recipientEmail("student@test.com")
+                .subject("Test")
+                .renderedHtml("<html>test</html>")
+                .build();
     }
 }

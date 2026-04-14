@@ -54,7 +54,7 @@
                         <td style="padding: 24px 40px; background-color: #f8f9fa; border-top: 1px solid #e8eaed;">
                             <p style="color: #9aa0a6; font-size: 12px; line-height: 1.5; margin: 0; text-align: center;">
                                 This is an automated message from AssessorFlow. Please do not reply to this email.<br/>
-                                &copy; 2026 AssessorFlow - AI-Powered Assessment Platform
+                                &copy; <span th:text="${#temporals.year(#temporals.createNow())}">2026</span> AssessorFlow - AI-Powered Assessment Platform
                             </p>
                         </td>
                     </tr>

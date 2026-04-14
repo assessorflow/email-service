@@ -104,6 +104,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Structured JSON logging (prod) -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version>
+        </dependency>
+
         <!-- SpotBugs Annotations (for compile-time bug suppression support) -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>

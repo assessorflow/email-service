@@ -1,10 +1,6 @@
 package sg.edu.nus.iss.email.subscriber;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
-import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
@@ -14,39 +10,18 @@ import sg.edu.nus.iss.email.service.AssessorReviewService;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class AssessorReviewSubscriber {
 
     private final AssessorReviewService service;
-    private final ObjectMapper objectMapper;
+    private final PubSubMessageHandler handler;
 
     @ServiceActivator(inputChannel = "assessorReviewRequestChannel")
     public void handleRequest(Message<String> message) {
-        BasicAcknowledgeablePubsubMessage ack = message.getHeaders()
-                .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
-        try {
-            AssessorReviewEvent event = objectMapper.readValue(message.getPayload(), AssessorReviewEvent.class);
-            log.info("[ASSESSOR_REVIEW][REQUEST] Received: recipient={}", event.getAssessorEmail());
-            service.handleRequest(event);
-            if (ack != null) ack.ack();
-        } catch (Exception e) {
-            log.error("[ASSESSOR_REVIEW][REQUEST] Failed to process event", e);
-            if (ack != null) ack.nack();
-        }
+        handler.handle(message, AssessorReviewEvent.class, service::handleRequest, "ASSESSOR_REVIEW][REQUEST");
     }
 
     @ServiceActivator(inputChannel = "assessorReviewDeliverChannel")
     public void handleDeliver(Message<String> message) {
-        BasicAcknowledgeablePubsubMessage ack = message.getHeaders()
-                .get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
-        try {
-            EmailDeliverEvent event = objectMapper.readValue(message.getPayload(), EmailDeliverEvent.class);
-            log.info("[ASSESSOR_REVIEW][DELIVER] Sending email: recipient={}", event.getRecipientEmail());
-            service.handleDeliver(event);
-            if (ack != null) ack.ack();
-        } catch (Exception e) {
-            log.error("[ASSESSOR_REVIEW][DELIVER] Failed to deliver email", e);
-            if (ack != null) ack.nack();
-        }
+        handler.handle(message, EmailDeliverEvent.class, service::handleDeliver, "ASSESSOR_REVIEW][DELIVER");
     }
 }
