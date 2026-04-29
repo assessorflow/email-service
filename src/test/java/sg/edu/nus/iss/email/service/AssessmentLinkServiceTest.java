@@ -28,8 +28,8 @@ class AssessmentLinkServiceTest {
     @Mock private EmailLogRepository emailLogRepository;
     @Mock private EmailSenderService emailSenderService;
     @Mock private PubSubTemplate pubSubTemplate;
-    @Mock private ObjectMapper objectMapper;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private AssessmentLinkService service;
 
@@ -51,8 +51,7 @@ class AssessmentLinkServiceTest {
             return log;
         });
         when(emailSenderService.renderTemplate(eq("assessment-link"), anyMap())).thenReturn("<html>link</html>");
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
-        when(pubSubTemplate.publish(anyString(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
+        when(pubSubTemplate.publish(any(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
 
         service.handleRequest(event);
 

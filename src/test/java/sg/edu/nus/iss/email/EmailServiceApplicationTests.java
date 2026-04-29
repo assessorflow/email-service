@@ -6,6 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@org.springframework.context.annotation.Import(TestConfig.class)
 class EmailServiceApplicationTests {
 
     @Test

@@ -13,7 +13,7 @@ import sg.edu.nus.iss.email.dto.participant_report.ParticipantReportEvent;
 
 import java.util.Map;
 
-@Profile({"dev", "test"})
+@Profile("dev")
 @RestController
 @RequestMapping("/api/v1/test/email")
 @RequiredArgsConstructor

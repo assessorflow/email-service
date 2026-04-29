@@ -28,8 +28,8 @@ class AssessorReviewServiceTest {
     @Mock private EmailLogRepository emailLogRepository;
     @Mock private EmailSenderService emailSenderService;
     @Mock private PubSubTemplate pubSubTemplate;
-    @Mock private ObjectMapper objectMapper;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private AssessorReviewService service;
 
@@ -56,14 +56,13 @@ class AssessorReviewServiceTest {
             return log;
         });
         when(emailSenderService.renderTemplate(eq("question-review"), anyMap())).thenReturn("<html>rendered</html>");
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
-        when(pubSubTemplate.publish(anyString(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
+        when(pubSubTemplate.publish(any(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
 
         service.handleRequest(event);
 
         verify(emailLogRepository).save(any(EmailLog.class));
         verify(emailSenderService).renderTemplate(eq("question-review"), anyMap());
-        verify(pubSubTemplate).publish(anyString(), anyString());
+        verify(pubSubTemplate).publish(any(), anyString());
     }
 
     @Test

@@ -28,8 +28,8 @@ class ParticipantReportServiceTest {
     @Mock private EmailLogRepository emailLogRepository;
     @Mock private EmailSenderService emailSenderService;
     @Mock private PubSubTemplate pubSubTemplate;
-    @Mock private ObjectMapper objectMapper;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private ParticipantReportService service;
 
@@ -51,8 +51,7 @@ class ParticipantReportServiceTest {
             return log;
         });
         when(emailSenderService.renderTemplate(eq("participant-report"), anyMap())).thenReturn("<html>report</html>");
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
-        when(pubSubTemplate.publish(anyString(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
+        when(pubSubTemplate.publish(any(), anyString())).thenReturn(CompletableFuture.completedFuture("msg-id"));
 
         service.handleRequest(event);
 
